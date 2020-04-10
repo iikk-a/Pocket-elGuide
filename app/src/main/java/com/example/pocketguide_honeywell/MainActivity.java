@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity{
                     fetchSuccess = true;
                     elGuideCodeText.setText(getGuideKoodiFromDatabase(EAN));
                     Log.d(DB_LOG, "Got values from the database");
-                    dataBaseTextString = "database";
+                    dataBaseTextString = getDescriptionFromEAN(EAN);
                 }
 
                 // UI elements can only be accessed and have to be modified by the original thread that created them AKA the UI thread
@@ -177,7 +177,9 @@ public class MainActivity extends AppCompatActivity{
             String URL = "https://www.gigantti.fi/search?SearchTerm=" + elGuideCodeText.getText().toString() + "&search=&searchResultTab=";
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse(URL));
-            startActivity(intent);
+            if(intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
         }
     }
 
@@ -206,14 +208,19 @@ public class MainActivity extends AppCompatActivity{
 
     // Fetch the code from the database
     private String getGuideKoodiFromDatabase(String EAN) {
-        elGuideDB elGuide = db.findHandler(EAN);
-        return elGuide == null ? "-1" : elGuide.getGuideCode();
+        elGuideDB elGuideDB = db.findHandler(EAN);
+        return elGuideDB == null ? "-1" : elGuideDB.getGuideCode();
     }
 
     // Add the code and EAN to the database
     private void addToDatabase(String EAN, String guideCode, String description) {
         elGuideDB elGuideDB = new elGuideDB(EAN, guideCode, description);
         db.addHandler(elGuideDB);
+    }
+
+    private String getDescriptionFromEAN(String EAN) {
+        elGuideDB elGuideDB = db.findHandler(EAN);
+        return elGuideDB == null ? "database" : elGuideDB.getDescription();
     }
 
 }
