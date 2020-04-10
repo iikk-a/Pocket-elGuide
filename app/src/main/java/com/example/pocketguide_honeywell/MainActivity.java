@@ -20,7 +20,7 @@ import org.jsoup.Jsoup;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     // Initialize variables
     private EditText eanTextField;
@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView dataBaseText;
     private String dataBaseTextString;
     private boolean fetchSuccess = false;
+    private static final String DB_LOG = "DATABASE";
     private MyDBHandler db;
 
     @Override
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Setup onCLickListener for the elGuide code text field so that URL links can be clicked
         elGuideCodeText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Function to handle code fetching
-    public void buttonClick() {
+    private void buttonClick() {
 
         // Network actions have to be performed in a separate thread
         Thread thread = new Thread(new Runnable() {
@@ -120,12 +122,12 @@ public class MainActivity extends AppCompatActivity {
                     if (!elGuide.equals("www.gigantti.fi")) {
                         fetchSuccess = true;
                         addToDatabase(EAN, elGuide, description);
-                        Log.d("DATABASE", "Added values to the database");
+                        Log.d(DB_LOG, "Added values to the database");
                         dataBaseTextString = description;
                     } else {
                         fetchSuccess = false;
                         elGuideCodeText.setText("Try again!");
-                        Log.d("DATABASE", "Parsing failed, www.gigantti.fi has not been added to the database");
+                        Log.d(DB_LOG, "Parsing failed, www.gigantti.fi has not been added to the database");
                         dataBaseTextString = "EAN: " + EAN;
                     }
                 }
@@ -134,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     fetchSuccess = true;
                     elGuideCodeText.setText(getGuideKoodiFromDatabase(EAN));
-                    Log.d("DATABASE", "Got values from the database");
+                    Log.d(DB_LOG, "Got values from the database");
                     dataBaseTextString = "database";
                 }
 
@@ -170,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         eanTextField.setText("");
     }
 
-    public void openURL() {
+    private void openURL() {
         if(fetchSuccess) {
             String URL = "https://www.gigantti.fi/search?SearchTerm=" + elGuideCodeText.getText().toString() + "&search=&searchResultTab=";
             Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -194,31 +196,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         getSupportActionBar().hide();
-        db.loadHandler();
     }
 
     // Check if EAN already exists in the database
-    public boolean isInDatabase(String EAN) {
+    private boolean isInDatabase(String EAN) {
         elGuideDB elGuide = db.findHandler(EAN);
-        if (elGuide != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return elGuide != null;
     }
 
     // Fetch the code from the database
-    public String getGuideKoodiFromDatabase(String EAN) {
+    private String getGuideKoodiFromDatabase(String EAN) {
         elGuideDB elGuide = db.findHandler(EAN);
-        if (elGuide != null) {
-            return elGuide.getGuideKoodi();
-        } else {
-            return "-1";
-        }
+        return elGuide == null ? "-1" : elGuide.getGuideCode();
     }
 
     // Add the code and EAN to the database
-    public void addToDatabase(String EAN, String guideCode, String description) {
+    private void addToDatabase(String EAN, String guideCode, String description) {
         elGuideDB elGuideDB = new elGuideDB(EAN, guideCode, description);
         db.addHandler(elGuideDB);
     }

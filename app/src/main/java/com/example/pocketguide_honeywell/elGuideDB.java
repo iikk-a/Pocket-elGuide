@@ -1,29 +1,40 @@
 package com.example.pocketguide_honeywell;
 
 public class elGuideDB {
+
+    // Initialize the variables
     private String EAN;
-    private String elGuideKoodi;
+    private String elGuideCode;
     private String description;
 
-    public elGuideDB(){}
+    // Constructor when no arguments are needed, only need to call the class
+    elGuideDB(){}
 
-    public elGuideDB(String EAN, String guideKoodi, String description) {
+    // Constructor for an object
+    elGuideDB(String EAN, String guideKoodi, String description) {
         this.EAN = EAN;
-        this.elGuideKoodi = guideKoodi;
+        this.elGuideCode = guideKoodi;
         this.description = description;
     }
 
-    public String getGuideKoodi() { return this.elGuideKoodi; }
+    // Getter for guideCode
+    String getGuideCode() { return this.elGuideCode; }
 
-    public String getEAN() { return this.EAN; }
+    // Getter for EAN code
+    String getEAN() { return this.EAN; }
 
-    public String getDescription() { return this.description; }
+    // Getter for description
+    String getDescription() { return this.description; }
 
-    public void setEAN(String EAN) { this.EAN = EAN; }
 
-    public void setGuideKoodi(String guideKoodi) { this.elGuideKoodi = guideKoodi; }
+    // Setter for EAN
+    void setEAN(String EAN) { this.EAN = EAN; }
 
-    public void setDescription(String description) {this.description = description; }
+    // Setter for guideCode
+    void setGuideCode(String guideCode) { this.elGuideCode = guideCode; }
+
+    // Setter for description
+    void setDescription(String description) {this.description = description; }
 
 
 
