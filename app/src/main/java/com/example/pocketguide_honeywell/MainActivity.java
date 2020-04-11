@@ -1,6 +1,7 @@
 package com.example.pocketguide_honeywell;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -175,11 +176,9 @@ public class MainActivity extends AppCompatActivity{
     private void openURL() {
         if(fetchSuccess) {
             String URL = "https://www.gigantti.fi/search?SearchTerm=" + elGuideCodeText.getText().toString() + "&search=&searchResultTab=";
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(URL));
-            if(intent.resolveActivity(getPackageManager()) != null) {
-                startActivity(intent);
-            }
+            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+            CustomTabsIntent customTabsIntent = builder.build();
+            customTabsIntent.launchUrl(this, Uri.parse(URL));
         }
     }
 
