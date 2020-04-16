@@ -8,7 +8,7 @@ public class elGuideDB {
     private String description;
 
     // Constructor when no arguments are needed, only need to call the class
-    elGuideDB(){}
+    public elGuideDB(){}
 
     // Constructor for an object
     elGuideDB(String EAN, String guideKoodi, String description) {

@@ -16,6 +16,8 @@ public class CustomizedExceptionHandler implements UncaughtExceptionHandler {
 
     private UncaughtExceptionHandler defaultUEH;
     private String localPath;
+    public CustomizedExceptionHandler() {}
+
     public CustomizedExceptionHandler(String localPath) {
         this.localPath = localPath;
         //Getting the the default exception handler

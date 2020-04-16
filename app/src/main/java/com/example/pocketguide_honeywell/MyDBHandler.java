@@ -5,6 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 public class MyDBHandler extends SQLiteOpenHelper {
 
@@ -17,7 +20,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_DESCRIPTION = "Description";
 
     //initialize the database
-    MyDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+    public MyDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
         SQLiteDatabase db = this.getWritableDatabase();
     }
@@ -63,6 +66,8 @@ public class MyDBHandler extends SQLiteOpenHelper {
     elGuideDB findHandler(String EAN) {
         SQLiteDatabase db = this.getWritableDatabase();
         if (EAN == null) {
+            EAN = "0";
+        } else if (EAN.equals("")) {
             EAN = "0";
         }
         String query = "Select * FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = " + EAN + ";";

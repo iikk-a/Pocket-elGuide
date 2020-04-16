@@ -88,6 +88,9 @@ public class MainActivity extends AppCompatActivity{
 
     // Function to handle code fetching
     private void buttonClick() {
+        if (eanTextField.getText().toString().equals("")) {
+            return;
+        }
 
         // Network actions have to be performed in a separate thread
         Thread thread = new Thread(new Runnable() {
