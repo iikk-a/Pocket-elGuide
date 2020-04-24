@@ -107,6 +107,18 @@ public class MainActivity extends AppCompatActivity{
                 openURL();
             }
         });
+        productImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openURL();
+            }
+        });
+        dataBaseText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openURL();
+            }
+        });
 
         // Give eanTextField -element proper elements
         eanTextField.setImeActionLabel("Find", KeyEvent.KEYCODE_ENTER);
