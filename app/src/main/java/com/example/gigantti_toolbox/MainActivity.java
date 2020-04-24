@@ -3,10 +3,12 @@ package com.example.gigantti_toolbox;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -22,11 +24,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.widget.Toolbar;
 
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.iikkag.gigantti_toolbox.R;
 import com.squareup.picasso.Picasso;
 
@@ -36,7 +43,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements SettingsFragment.OnFragmentInteractionListener, CountrySelectDialog.CountrySelectDialogListener {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -50,10 +57,17 @@ public class MainActivity extends AppCompatActivity{
     private Toolbar toolbar;
     private TextView elGuideCodeText;
     private TextView dataBaseText;
+    private FloatingActionButton settingsButton;
+    private FrameLayout fragmentContainer;
     private ImageView productImage;
     private String dataBaseTextString;
+    private String finalReturn;
+    private ConstraintLayout layout;
     private boolean fetchSuccess = false;
-    private boolean fetchIMG = true;
+    private Integer[] settings = {0,1,0,0};
+    private String[] firstPartURL = {"https://www.gigantti.fi/search?SearchTerm=", "https://www.elgiganten.se/search?SearchTerm=", "https://www.elkjop.no/search?SearchTerm="};
+    private String[] firstPartImgURL = {"https://www.gigantti.fi", "https://elgiganten.se", "https://elkjop.no"};
+
 
     public static final String SHARED_PREFS = "sharedPrefs";
     public static final String IMGBOOL = "imgfetch";
@@ -74,6 +88,7 @@ public class MainActivity extends AppCompatActivity{
     private static final int ZXING_CAMERA_PERMISSION = 1;
     private String cameraEAN = "";
     private String imgURL = "";
+    private final String URL_LAST = "&search=&searchResultTab=";
 
 
     @Override
@@ -88,6 +103,9 @@ public class MainActivity extends AppCompatActivity{
         dataBaseText = findViewById(R.id.dataBase);
         productImage = findViewById(R.id.imageView);
         toolbar = findViewById(R.id.toolbar);
+        settingsButton = findViewById(R.id.settingsButton);
+        fragmentContainer = findViewById(R.id.frameLayout);
+        layout = findViewById(R.id.background);
 
         setSupportActionBar(toolbar);
 
@@ -120,6 +138,13 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSettingsFragment();
+            }
+        });
+
         // Give eanTextField -element proper elements
         eanTextField.setImeActionLabel("Find", KeyEvent.KEYCODE_ENTER);
         eanTextField.setImeOptions(2);
@@ -139,7 +164,7 @@ public class MainActivity extends AppCompatActivity{
 
         // Setup first element in database, thus initializing it
         db = new MyDBHandler(this, null, null, 1);
-        elGuideDB elguide = new elGuideDB("0", "0", "0", "0", "0");
+        elGuideDB elguide = new elGuideDB("0", "0", "0", "0", "0", 0);
         db.addHandler(elguide);
 
         if(getIntent().getStringExtra("EANCODE") != null) {
@@ -163,8 +188,9 @@ public class MainActivity extends AppCompatActivity{
 
                 // Setup variables and URLs for code fetching
                 String EAN = eanTextField.getText().toString();
-                String URL = "https://www.gigantti.fi/search?SearchTerm=" + EAN + "&search=&searchResultTab=";
+                String URL = firstPartURL[settings[0]] + EAN + URL_LAST;
                 String finalURL = URL;
+                Log.d("SETTINGS", settings[0].toString());
 
                 // Try to see if EAN and code already exist in the database, if not, fetch it from the website
                 if(!isInDatabase(EAN)) {
@@ -187,7 +213,7 @@ public class MainActivity extends AppCompatActivity{
                     String description = separated[index + 1];
 
                     // If EAN returns a hit, save that to the database. If the query fails, do not save it to the database
-                    if (!elGuide.equals("www.gigantti.fi")) {
+                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide.equals("elkjop.no")) {
                         fetchSuccess = true;
                         Document doc = null;
                         try {
@@ -196,16 +222,16 @@ public class MainActivity extends AppCompatActivity{
                             e.printStackTrace();
                         }
                         Element firstImage = doc.select("img.first-product-image").first();
-                        imgURL = "https://www.gigantti.fi" + firstImage.attr("src");
+                        imgURL = firstPartImgURL[settings[0]] + firstImage.attr("src");
                         Log.d("IMAGE", "Image source = " + imgURL);
-                        addToDatabase(EAN, elGuide, description, finalURL, imgURL);
+                        addToDatabase(EAN, elGuide, description, finalURL, imgURL, settings[0]);
                         Log.d(DB_LOG, "Added values to the database");
                         dataBaseTextString = description;
                     } else {
                         fetchSuccess = false;
                         imgURL = "";
                         elGuideCodeText.setText("Try again!");
-                        Log.d(DB_LOG, "Parsing failed, www.gigantti.fi has not been added to the database");
+                        Log.d(DB_LOG, "Parsing failed, " + firstPartImgURL[settings[0]] + " has not been added to the database");
                         dataBaseTextString = "EAN: " + EAN;
                     }
                 }
@@ -227,7 +253,7 @@ public class MainActivity extends AppCompatActivity{
                         if(fetchSuccess) {
                             elGuideCodeText.setPaintFlags(elGuideCodeText.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
                             elGuideCodeText.setTextColor(Color.BLUE);
-                            if(!imgURL.equals("") && fetchIMG) {
+                            if(!imgURL.equals("") && settings[1] == 1) {
                                 Picasso.get().load(imgURL).into(productImage);
                                 Log.d("IMAGE", "Image added successfully. source= " + imgURL);
                             }
@@ -259,7 +285,7 @@ public class MainActivity extends AppCompatActivity{
 
     private void openURL() {
         if(fetchSuccess) {
-            String URL = getURLFromDatabase(elGuideCodeText.getText().toString()) == "-1" ? "https://www.gigantti.fi/search?SearchTerm=" + elGuideCodeText.getText().toString() + "&search=&searchResultTab=" : getURLFromDatabase(elGuideCodeText.getText().toString());
+            String URL = getURLFromDatabase(elGuideCodeText.getText().toString()) == "-1" ? firstPartURL[settings[0]] + elGuideCodeText.getText().toString() + URL_LAST : getURLFromDatabase(elGuideCodeText.getText().toString());
             CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
             CustomTabsIntent customTabsIntent = builder.build();
             customTabsIntent.launchUrl(this, Uri.parse(URL));
@@ -272,7 +298,12 @@ public class MainActivity extends AppCompatActivity{
     protected void onPause() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(IMGBOOL, fetchIMG);
+        editor.putInt(IMGBOOL, settings[1]);
+        editor.putInt("SETTINGS0", settings[0]);
+        editor.putInt("SETTINGS1", settings[1]);
+        editor.putInt("SETTINGS2", settings[2]);
+        editor.putInt("SETTINGS3", settings[3]);
+        editor.apply();
 
         super.onPause();
         getSupportActionBar().hide();
@@ -284,12 +315,20 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        fetchIMG = sharedPreferences.getBoolean(IMGBOOL, true);
+        settings[1] = sharedPreferences.getInt(IMGBOOL, 1);
+        settings[0] = sharedPreferences.getInt("SETTINGS0", 0);
+        settings[1] = sharedPreferences.getInt("SETTINGS1", 1);
+        settings[2] = sharedPreferences.getInt("SETTINGS2", 0);
+        settings[3] = sharedPreferences.getInt("SETTINGS3", 0);
+
         super.onResume();
         getSupportActionBar().hide();
         if (!cameraEAN.equals("")) {
             buttonClick();
         }
+
+        Context context = getApplicationContext();
+        layout.setBackground(ContextCompat.getDrawable(context, R.color.white));
     }
 
     // Check if EAN already exists in the database
@@ -306,7 +345,12 @@ public class MainActivity extends AppCompatActivity{
 
     private String getURLFromDatabase(String guideCode) {
         elGuideDB elGuideDB = db.guideHandler(guideCode);
-        return elGuideDB == null ? "-1" : elGuideDB.getURL();
+        String toReturn = elGuideDB == null ? "-1" : elGuideDB.getURL();
+        if (elGuideDB.getCountry() != settings[0]) {
+            toReturn = firstPartURL[settings[0]] + elGuideDB.getGuideCode() + URL_LAST;
+        }
+
+        return toReturn;
     }
 
     private String getImageURLFromDatabase(String guideCode) {
@@ -315,14 +359,135 @@ public class MainActivity extends AppCompatActivity{
     }
 
     // Add the code and EAN to the database
-    private void addToDatabase(String EAN, String guideCode, String description, String URL, String ImageURL) {
-        elGuideDB elGuideDB = new elGuideDB(EAN, guideCode, description, URL, ImageURL);
+    private void addToDatabase(String EAN, String guideCode, String description, String URL, String ImageURL, Integer country) {
+        elGuideDB elGuideDB = new elGuideDB(EAN, guideCode, description, URL, ImageURL, country);
         db.addHandler(elGuideDB);
     }
 
     private String getDescriptionFromEAN(String EAN) {
         elGuideDB elGuideDB = db.findHandler(EAN);
-        return elGuideDB == null ? "database" : elGuideDB.getDescription();
+        finalReturn = elGuideDB == null ? "database" : elGuideDB.getDescription();
+        if (elGuideDB.getCountry() != settings[0]) {
+            final String toReturn = firstPartURL[settings[0]] + elGuideDB.getGuideCode() + URL_LAST;
+            Thread thread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    String toSplit = "";
+                    try {
+                        toSplit = Jsoup.connect(toReturn).followRedirects(true).execute().url().toExternalForm();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    String[] separated = toSplit.split("/");
+                    int index = separated.length > 2 ? separated.length - 2 : 0;
+                    String elGuide = separated[index];
+
+                    String description = separated[index + 1];
+                    finalReturn = description;
+
+                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide.equals("elkjop.no")) {
+                        fetchSuccess = true;
+                        Document doc = null;
+                        try {
+                            doc = Jsoup.connect(toReturn).get();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Element firstImage = doc.select("img.first-product-image").first();
+                        imgURL = firstPartImgURL[settings[0]] + firstImage.attr("src");
+                        Log.d("IMAGE", "Image source = " + imgURL);
+                        //addToDatabase(EAN, elGuide, description, finalURL, imgURL, settings[0]);
+                        //Log.d(DB_LOG, "Added values to the database");
+                        //dataBaseTextString = description;
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(settings[1] == 1) {
+                                Picasso.get().load(imgURL).into(productImage);
+                            }
+                        }
+                    });
+                }
+            });
+
+            thread.start();
+
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return finalReturn;
+    }
+
+    private String getDescriptionFromGuideCode(String guideCode) {
+        if (guideCode.equals("")) { return ""; }
+        elGuideDB elGuideDB = db.guideHandler(guideCode);
+        finalReturn = elGuideDB == null ? "database" : elGuideDB.getDescription();
+        if (elGuideDB.getCountry() != settings[0] || settings[1] == 1) {
+            final String toReturn = firstPartURL[settings[0]] + elGuideDB.getGuideCode() + URL_LAST;
+            Thread thread = new Thread(new Runnable() {
+
+
+                @Override
+                public void run() {
+                    String toSplit = "";
+                    try {
+                        toSplit = Jsoup.connect(toReturn).followRedirects(true).execute().url().toExternalForm();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    String[] separated = toSplit.split("/");
+                    int index = separated.length > 2 ? separated.length - 2 : 0;
+                    String elGuide = separated[index];
+
+                    String description = separated[index + 1];
+                    finalReturn = description;
+
+                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide.equals("elkjop.no")) {
+                        fetchSuccess = true;
+                        Document doc = null;
+                        try {
+                            doc = Jsoup.connect(toReturn).get();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Element firstImage = doc.select("img.first-product-image").first();
+                        imgURL = firstPartImgURL[settings[0]] + firstImage.attr("src");
+                        Log.d("IMAGE", "Image source = " + imgURL);
+                        //addToDatabase(EAN, elGuide, description, finalURL, imgURL, settings[0]);
+                        //Log.d(DB_LOG, "Added values to the database");
+                        //dataBaseTextString = description;
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(settings[1] == 1) {
+                                Picasso.get().load(imgURL).into(productImage);
+                            }
+                        }
+                    });
+                }
+            });
+
+            thread.start();
+
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return finalReturn;
     }
 
     private void scannerCamera() {
@@ -335,12 +500,64 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void toggleImageFetching() {
-        if(fetchIMG) {
-            fetchIMG = !fetchIMG;
+        if(settings[1] == 1) {
+            settings[1] = 0;
             Toast.makeText(this, "Image Fetching Has Been Turned Off", Toast.LENGTH_SHORT).show();
+            productImage.setVisibility(View.GONE);
         } else {
-            fetchIMG = !fetchIMG;
+            settings[1] = 1;
+            productImage.setVisibility(View.VISIBLE);
             Toast.makeText(this, "Image Fetching Has Been Turned On", Toast.LENGTH_SHORT).show();
+            getDescriptionFromGuideCode(elGuideCodeText.getText().toString());
+            FragmentManager fm = getSupportFragmentManager();
+            if (fm.getBackStackEntryCount() > 0) {
+                fm.popBackStack();
+            }
+        }
+    }
+
+    private void openSettingsFragment() {
+        Context context = getApplicationContext();
+        layout.setBackground(ContextCompat.getDrawable(context, R.color.darkBackground));
+
+
+        SettingsFragment fragment = SettingsFragment.newInstance(context, layout, settingsButton);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.addToBackStack(null);
+        transaction.add(R.id.frameLayout, fragment, "SettingsFragment").commit();
+    }
+
+    @Override
+    public void onFragmentInteraction(Integer id, Integer value) {
+        //Toast.makeText(this, "The interaction worked!" + id + " " + value, Toast.LENGTH_SHORT).show();
+        if (id == 1){
+            toggleImageFetching();
+        }
+    }
+
+    @Override
+    public void passCountryData(Integer id, Integer value) {
+        settings[id] = value;
+        String[] stringArray;
+        String toPrint = "";
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("SETTINGS"+id, id);
+        editor.apply();
+        if(id == 0){
+            stringArray = getResources().getStringArray(R.array.Countries);
+            toPrint = stringArray[settings[0]] + " Selected";
+            dataBaseText.setText(getDescriptionFromGuideCode(elGuideCodeText.getText().toString()));
+        }
+
+        if (!toPrint.equals("")) {
+            Toast.makeText(this, toPrint, Toast.LENGTH_SHORT).show();
+        }
+
+        FragmentManager fm = getSupportFragmentManager();
+        if (fm.getBackStackEntryCount() > 0) {
+            fm.popBackStack();
         }
     }
 

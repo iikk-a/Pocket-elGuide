@@ -3,7 +3,7 @@
     package="com.iikkag.gigantti_toolbox">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
@@ -13,7 +13,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.gigantti_toolbox.MainActivity"
+        <activity
+            android:name="com.example.gigantti_toolbox.DeveloperActivity"
+            android:label="@string/title_activity_developer"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name="com.example.gigantti_toolbox.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,11 +26,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.gigantti_toolbox.CaptureExceptionActivity"/>
-        <activity android:name="com.example.gigantti_toolbox.CustomizedExceptionHandler"/>
-        <activity android:name="com.example.gigantti_toolbox.elGuideDB"/>
-        <activity android:name="com.example.gigantti_toolbox.MyDBHandler"/>
-        <activity android:name="com.example.gigantti_toolbox.SimpleScannerActivity"/>
+        <activity android:name="com.example.gigantti_toolbox.CaptureExceptionActivity" />
+        <activity android:name="com.example.gigantti_toolbox.CustomizedExceptionHandler" />
+        <activity android:name="com.example.gigantti_toolbox.elGuideDB" />
+        <activity android:name="com.example.gigantti_toolbox.MyDBHandler" />
+        <activity android:name="com.example.gigantti_toolbox.SimpleScannerActivity" />
     </application>
 
 </manifest>

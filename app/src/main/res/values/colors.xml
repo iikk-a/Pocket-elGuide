@@ -4,4 +4,7 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="giganttiGreen">#66A832</color>
+    <color name="offWhite">#E5E7E9</color>
+    <color name="white">#FFFFFF</color>
+    <color name="darkBackground">#707B7C</color>
 </resources>
