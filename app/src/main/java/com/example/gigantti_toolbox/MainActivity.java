@@ -1,4 +1,4 @@
-package com.example.pocketguide_honeywell;
+package com.example.gigantti_toolbox;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 
-import com.iikkag.pocketguide_honeywell.R;
+import com.iikkag.gigantti_toolbox.R;
 import com.squareup.picasso.Picasso;
 
 import org.jsoup.Jsoup;

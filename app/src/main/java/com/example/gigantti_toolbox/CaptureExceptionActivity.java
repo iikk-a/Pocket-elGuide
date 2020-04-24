@@ -1,10 +1,8 @@
-package com.example.pocketguide_honeywell;
+package com.example.gigantti_toolbox;
 
-import com.iikkag.pocketguide_honeywell.R;
+import com.iikkag.gigantti_toolbox.R;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,7 +12,7 @@ public class CaptureExceptionActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Thread.setDefaultUncaughtExceptionHandler(new CustomizedExceptionHandler("Android/data/com.iikkag.pocketguide_honeywell/crash_reports"));
+        Thread.setDefaultUncaughtExceptionHandler(new CustomizedExceptionHandler("Android/data/com.iikkag.gigantti_toolbox/crash_reports"));
 
         String nullString = null;
         System.out.println(nullString);

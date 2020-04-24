@@ -1,4 +1,4 @@
-package com.example.pocketguide_honeywell;
+package com.example.gigantti_toolbox;
 
 import android.content.Intent;
 import android.os.Bundle;
