@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +13,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.pocketguide_honeywell.MainActivity">
+        <activity android:name="com.example.pocketguide_honeywell.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,6 +25,7 @@
         <activity android:name="com.example.pocketguide_honeywell.CustomizedExceptionHandler"/>
         <activity android:name="com.example.pocketguide_honeywell.elGuideDB"/>
         <activity android:name="com.example.pocketguide_honeywell.MyDBHandler"/>
+        <activity android:name="com.example.pocketguide_honeywell.SimpleScannerActivity"/>
     </application>
 
 </manifest>

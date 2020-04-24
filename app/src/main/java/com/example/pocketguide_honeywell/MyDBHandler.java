@@ -18,17 +18,19 @@ public class MyDBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_ID = "EAN";
     private static final String COLUMN_NAME = "GuideKoodi";
     private static final String COLUMN_DESCRIPTION = "Description";
+    private static final String COLUMN_URL = "URL";
+    private static final String COLUMN_IMAGEURL = "ImageURL";
 
-    //initialize the database
+    // Initialize the database
     public MyDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
         SQLiteDatabase db = this.getWritableDatabase();
     }
 
-    //Override the onCreate to initialize our own database
+    // Override the onCreate to initialize our own database
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "(" + COLUMN_ID + " TEXT, " + COLUMN_NAME + " TEXT, " + COLUMN_DESCRIPTION + " TEXT )";
+        String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "(" + COLUMN_ID + " TEXT, " + COLUMN_NAME + " TEXT, " + COLUMN_DESCRIPTION + " TEXT, " + COLUMN_URL + " TEXT, " + COLUMN_IMAGEURL + " TEXT)";
         db.execSQL(CREATE_TABLE);
     }
 
@@ -46,7 +48,9 @@ public class MyDBHandler extends SQLiteOpenHelper {
             String result_0 = cursor.getString(0);
             String result_1 = cursor.getString(1);
             String result_2 = cursor.getString(2);
-            result += result_0 + " " + result_1 + " " + result_2 + System.getProperty("line.separator");
+            String result_3 = cursor.getString(3);
+            String result_4 = cursor.getString(4);
+            result += result_0 + " " + result_1 + " " + result_2 + " " + result_3 + " " + result_4 + System.getProperty("line.separator");
         }
         cursor.close();
         return result;
@@ -58,6 +62,8 @@ public class MyDBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_ID, elguide.getEAN());
         values.put(COLUMN_NAME, elguide.getGuideCode());
         values.put(COLUMN_DESCRIPTION, elguide.getDescription());
+        values.put(COLUMN_URL, elguide.getURL());
+        values.put(COLUMN_IMAGEURL, elguide.getImageURL());
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TABLE_NAME, null, values);
     }
@@ -78,6 +84,32 @@ public class MyDBHandler extends SQLiteOpenHelper {
             elguide.setEAN(cursor.getString(0));
             elguide.setGuideCode(cursor.getString(1));
             elguide.setDescription(cursor.getString(2));
+            elguide.setURL(cursor.getString(3));
+            elguide.setImageURL(cursor.getString(4));
+            cursor.close();
+        } else {
+            elguide = null;
+        }
+        return elguide;
+    }
+
+    elGuideDB guideHandler(String guideCode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        if (guideCode == null) {
+            guideCode = "0";
+        } else if (guideCode.equals("")) {
+            guideCode = "0";
+        }
+        String query = "Select * FROM " + TABLE_NAME + " WHERE " + COLUMN_NAME  + " = " + guideCode + ";";
+        Cursor cursor = db.rawQuery(query, null);
+        elGuideDB elguide = new elGuideDB();
+        if (cursor.moveToFirst()) {
+            cursor.moveToFirst();
+            elguide.setEAN(cursor.getString(0));
+            elguide.setGuideCode(cursor.getString(1));
+            elguide.setDescription(cursor.getString(2));
+            elguide.setURL(cursor.getString(3));
+            elguide.setImageURL(cursor.getString(4));
             cursor.close();
         } else {
             elguide = null;
@@ -106,12 +138,14 @@ public class MyDBHandler extends SQLiteOpenHelper {
     }
 
     // Update data in the database, currently unusued, but for the future
-    boolean updateHandler(String EAN, String guideKoodi, String description) {
+    boolean updateHandler(String EAN, String guideKoodi, String description, String URL, String ImageURL) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues args = new ContentValues();
         args.put(COLUMN_ID, EAN);
         args.put(COLUMN_NAME, guideKoodi);
         args.put(COLUMN_DESCRIPTION, description);
+        args.put(COLUMN_URL, URL);
+        args.put(COLUMN_IMAGEURL, ImageURL);
         return db.update(TABLE_NAME, args, COLUMN_ID + "=" + EAN, null) > 0;
     }
 

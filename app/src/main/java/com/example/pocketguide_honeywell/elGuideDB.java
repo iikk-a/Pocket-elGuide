@@ -6,15 +6,19 @@ public class elGuideDB {
     private String EAN;
     private String elGuideCode;
     private String description;
+    private String URL;
+    private String ImageURL;
 
     // Constructor when no arguments are needed, only need to call the class
     public elGuideDB(){}
 
     // Constructor for an object
-    elGuideDB(String EAN, String guideKoodi, String description) {
+    elGuideDB(String EAN, String guideKoodi, String description, String URL, String ImageURL) {
         this.EAN = EAN;
         this.elGuideCode = guideKoodi;
         this.description = description;
+        this.URL = URL;
+        this.ImageURL = ImageURL;
     }
 
     // Getter for guideCode
@@ -26,6 +30,11 @@ public class elGuideDB {
     // Getter for description
     String getDescription() { return this.description; }
 
+    // Getter for URL
+    String getURL() { return this.URL; }
+
+    // Getter for ImageURL
+    String getImageURL() { return this.ImageURL; }
 
     // Setter for EAN
     void setEAN(String EAN) { this.EAN = EAN; }
@@ -36,6 +45,11 @@ public class elGuideDB {
     // Setter for description
     void setDescription(String description) {this.description = description; }
 
+    // Setter for URL
+    void setURL(String URL) { this.URL = URL; }
+
+    // Setter for ImageURL
+    void setImageURL(String ImageURL) { this.ImageURL = ImageURL; }
 
 
 }

@@ -6,7 +6,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-public class CaptureExceptionActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class CaptureExceptionActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
