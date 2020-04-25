@@ -76,7 +76,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
         } else if (EAN.equals("")) {
             EAN = "0";
         }
-        String query = "Select * FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = " + EAN + ";";
+        String query = "Select * FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = " + "'" + EAN + "';";
         Cursor cursor = db.rawQuery(query, null);
         elGuideDB elguide = new elGuideDB();
         if (cursor.moveToFirst()) {
@@ -101,7 +101,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
         } else if (guideCode.equals("")) {
             guideCode = "0";
         }
-        String query = "Select * FROM " + TABLE_NAME + " WHERE " + COLUMN_NAME  + " = " + guideCode + ";";
+        String query = "Select * FROM " + TABLE_NAME + " WHERE " + COLUMN_NAME  + " = " + "'" + guideCode + "';";
         Cursor cursor = db.rawQuery(query, null);
         elGuideDB elguide = new elGuideDB();
         if (cursor.moveToFirst()) {

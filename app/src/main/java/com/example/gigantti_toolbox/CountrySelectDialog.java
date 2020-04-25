@@ -18,41 +18,17 @@ import com.iikkag.gigantti_toolbox.R;
 public class CountrySelectDialog extends AppCompatDialogFragment {
 
     private CountrySelectDialogListener listener;
-    private int value;
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.country_select_layout, null);
-
-        final RadioGroup radioGroup = view.findViewById(R.id.countryRadioGroup);
-
-
         builder.setTitle("Pick a Country")
                 .setItems(R.array.Countries, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        /*switch (radioGroup.getCheckedRadioButtonId()) {
-                            case R.id.countryFinlandButton:
-                                value = 1;
-                                break;
-                            case R.id.countrySwedenButton:
-                                value = 2;
-                                break;
-                            case R.id.countryNorwayButton:
-                                value = 3;
-                                break;
-                            default:
-                                value = 1;
-                                break;
-                        }*/
-
-                        value = which;
-
-                        listener.passCountryData(0, value);
+                        listener.passCountryData(0, which);
                     }
                 });
         return builder.create();

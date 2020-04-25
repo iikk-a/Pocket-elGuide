@@ -43,7 +43,9 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements SettingsFragment.OnFragmentInteractionListener, CountrySelectDialog.CountrySelectDialogListener {
+public class MainActivity extends AppCompatActivity
+        implements SettingsFragment.OnFragmentInteractionListener, CountrySelectDialog.CountrySelectDialogListener {
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -58,16 +60,22 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private TextView elGuideCodeText;
     private TextView dataBaseText;
     private FloatingActionButton settingsButton;
-    private FrameLayout fragmentContainer;
     private ImageView productImage;
     private String dataBaseTextString;
     private String finalReturn;
     private ConstraintLayout layout;
     private boolean fetchSuccess = false;
-    private Integer[] settings = {0,1,0,0};
-    private String[] firstPartURL = {"https://www.gigantti.fi/search?SearchTerm=", "https://www.elgiganten.se/search?SearchTerm=", "https://www.elkjop.no/search?SearchTerm="};
-    private String[] firstPartImgURL = {"https://www.gigantti.fi", "https://elgiganten.se", "https://elkjop.no"};
+    private Integer[] settings = {0, 1, 0, 0};
+    private String[] firstPartURL = {   "https://www.gigantti.fi/search?SearchTerm=",
+                                        "https://www.elgiganten.se/search?SearchTerm=",
+                                        "https://www.elkjop.no/search?SearchTerm="      };
 
+    private String[] firstPartImgURL = {    "https://www.gigantti.fi",
+                                            "https://elgiganten.se",
+                                            "https://elkjop.no"     };
+
+    private final char[] bannedCharacters = {'!', '"', '#', '¤', '%', '&', '/', '(', ')', '=', '?', '@', '£', '$',
+            '€', '{', '[', ']', '}', '\\'};
 
     public static final String SHARED_PREFS = "sharedPrefs";
     public static final String IMGBOOL = "imgfetch";
@@ -84,10 +92,15 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     private static final String DB_LOG = "DATABASE";
+
     private MyDBHandler db;
+
     private static final int ZXING_CAMERA_PERMISSION = 1;
+
     private String cameraEAN = "";
+
     private String imgURL = "";
+
     private final String URL_LAST = "&search=&searchResultTab=";
 
 
@@ -104,11 +117,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         productImage = findViewById(R.id.imageView);
         toolbar = findViewById(R.id.toolbar);
         settingsButton = findViewById(R.id.settingsButton);
-        fragmentContainer = findViewById(R.id.frameLayout);
         layout = findViewById(R.id.background);
 
         setSupportActionBar(toolbar);
-
 
         // Setup onClickListener for the button
         eanButton.setOnClickListener(new View.OnClickListener() {
@@ -150,14 +161,14 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         eanTextField.setImeOptions(2);
 
         // Make sure pressing enter means go instead of just hiding the keyboard
-        eanTextField.setOnKeyListener(new View.OnKeyListener(){
+        eanTextField.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                        buttonClick();
-                        return true;
-                    }
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    buttonClick();
+                    return true;
+                }
                 return false;
             }
         });
@@ -167,12 +178,11 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         elGuideDB elguide = new elGuideDB("0", "0", "0", "0", "0", 0);
         db.addHandler(elguide);
 
-        if(getIntent().getStringExtra("EANCODE") != null) {
+        if (getIntent().getStringExtra("EANCODE") != null) {
             cameraEAN = getIntent().getStringExtra("EANCODE");
             eanTextField.setText(cameraEAN);
         }
     }
-
 
 
     // Function to handle code fetching
@@ -193,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                 Log.d("SETTINGS", settings[0].toString());
 
                 // Try to see if EAN and code already exist in the database, if not, fetch it from the website
-                if(!isInDatabase(EAN)) {
+                if (!isInDatabase(EAN)) {
 
                     // Catch IOException errors
                     try {
@@ -213,7 +223,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     String description = separated[index + 1];
 
                     // If EAN returns a hit, save that to the database. If the query fails, do not save it to the database
-                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide.equals("elkjop.no")) {
+                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide
+                            .equals("www.elkjop.no")) {
                         fetchSuccess = true;
                         Document doc = null;
                         try {
@@ -222,7 +233,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                             e.printStackTrace();
                         }
                         Element firstImage = doc.select("img.first-product-image").first();
-                        imgURL = firstPartImgURL[settings[0]] + firstImage.attr("src");
+                        if (firstImage != null) {
+                            imgURL = firstPartImgURL[settings[0]] + firstImage.attr("src");
+                        }
                         Log.d("IMAGE", "Image source = " + imgURL);
                         addToDatabase(EAN, elGuide, description, finalURL, imgURL, settings[0]);
                         Log.d(DB_LOG, "Added values to the database");
@@ -231,7 +244,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                         fetchSuccess = false;
                         imgURL = "";
                         elGuideCodeText.setText("Try again!");
-                        Log.d(DB_LOG, "Parsing failed, " + firstPartImgURL[settings[0]] + " has not been added to the database");
+                        Log.d(DB_LOG, "Parsing failed, " + firstPartImgURL[settings[0]]
+                                + " has not been added to the database");
                         dataBaseTextString = "EAN: " + EAN;
                     }
                 }
@@ -250,10 +264,11 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     @Override
                     public void run() {
                         dataBaseText.setText(dataBaseTextString);
-                        if(fetchSuccess) {
-                            elGuideCodeText.setPaintFlags(elGuideCodeText.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+                        if (fetchSuccess) {
+                            elGuideCodeText
+                                    .setPaintFlags(elGuideCodeText.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
                             elGuideCodeText.setTextColor(Color.BLUE);
-                            if(!imgURL.equals("") && settings[1] == 1) {
+                            if (!imgURL.equals("") && settings[1] == 1) {
                                 Picasso.get().load(imgURL).into(productImage);
                                 Log.d("IMAGE", "Image added successfully. source= " + imgURL);
                             }
@@ -278,14 +293,18 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
         // Reset the text field to be used for other EANs
         eanTextField.setText("");
     }
 
     private void openURL() {
-        if(fetchSuccess) {
-            String URL = getURLFromDatabase(elGuideCodeText.getText().toString()) == "-1" ? firstPartURL[settings[0]] + elGuideCodeText.getText().toString() + URL_LAST : getURLFromDatabase(elGuideCodeText.getText().toString());
+        if (fetchSuccess) {
+            String URL = getURLFromDatabase(elGuideCodeText.getText().toString()) == "-1" ? firstPartURL[settings[0]]
+                    + elGuideCodeText.getText().toString() + URL_LAST
+                    : getURLFromDatabase(elGuideCodeText.getText().toString());
+            if (!URL.contains("http") || !URL.contains("https")) {
+                return;
+            }
             CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
             CustomTabsIntent customTabsIntent = builder.build();
             customTabsIntent.launchUrl(this, Uri.parse(URL));
@@ -346,8 +365,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     private String getURLFromDatabase(String guideCode) {
         elGuideDB elGuideDB = db.guideHandler(guideCode);
         String toReturn = elGuideDB == null ? "-1" : elGuideDB.getURL();
-        if (elGuideDB.getCountry() != settings[0]) {
+        if (elGuideDB.getCountry() != settings[0] && elGuideDB != null) {
             toReturn = firstPartURL[settings[0]] + elGuideDB.getGuideCode() + URL_LAST;
+
         }
 
         return toReturn;
@@ -359,7 +379,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     // Add the code and EAN to the database
-    private void addToDatabase(String EAN, String guideCode, String description, String URL, String ImageURL, Integer country) {
+    private void addToDatabase(String EAN, String guideCode, String description, String URL, String ImageURL,
+            Integer country) {
         elGuideDB elGuideDB = new elGuideDB(EAN, guideCode, description, URL, ImageURL, country);
         db.addHandler(elGuideDB);
     }
@@ -387,7 +408,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     String description = separated[index + 1];
                     finalReturn = description;
 
-                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide.equals("elkjop.no")) {
+                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide
+                            .equals("elkjop.no")) {
                         fetchSuccess = true;
                         Document doc = null;
                         try {
@@ -406,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(settings[1] == 1) {
+                            if (settings[1] == 1) {
                                 Picasso.get().load(imgURL).into(productImage);
                             }
                         }
@@ -427,8 +449,13 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     private String getDescriptionFromGuideCode(String guideCode) {
-        if (guideCode.equals("")) { return ""; }
+        if (guideCode.equals("")) {
+            return "";
+        }
         elGuideDB elGuideDB = db.guideHandler(guideCode);
+        if (elGuideDB == null) {
+            return "Try Again!";
+        }
         finalReturn = elGuideDB == null ? "database" : elGuideDB.getDescription();
         if (elGuideDB.getCountry() != settings[0] || settings[1] == 1) {
             final String toReturn = firstPartURL[settings[0]] + elGuideDB.getGuideCode() + URL_LAST;
@@ -451,7 +478,8 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     String description = separated[index + 1];
                     finalReturn = description;
 
-                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide.equals("elkjop.no")) {
+                    if (!elGuide.equals("www.gigantti.fi") && !elGuide.equals("www.elgiganten.se") && !elGuide
+                            .equals("elkjop.no")) {
                         fetchSuccess = true;
                         Document doc = null;
                         try {
@@ -470,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(settings[1] == 1) {
+                            if (settings[1] == 1) {
                                 Picasso.get().load(imgURL).into(productImage);
                             }
                         }
@@ -491,8 +519,10 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     private void scannerCamera() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, ZXING_CAMERA_PERMISSION);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat
+                    .requestPermissions(this, new String[]{Manifest.permission.CAMERA}, ZXING_CAMERA_PERMISSION);
         } else {
             Intent intent = new Intent(this, SimpleScannerActivity.class);
             startActivity(intent);
@@ -500,7 +530,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     }
 
     private void toggleImageFetching() {
-        if(settings[1] == 1) {
+        if (settings[1] == 1) {
             settings[1] = 0;
             Toast.makeText(this, "Image Fetching Has Been Turned Off", Toast.LENGTH_SHORT).show();
             productImage.setVisibility(View.GONE);
@@ -520,7 +550,6 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         Context context = getApplicationContext();
         layout.setBackground(ContextCompat.getDrawable(context, R.color.darkBackground));
 
-
         SettingsFragment fragment = SettingsFragment.newInstance(context, layout, settingsButton);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -531,7 +560,7 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
     @Override
     public void onFragmentInteraction(Integer id, Integer value) {
         //Toast.makeText(this, "The interaction worked!" + id + " " + value, Toast.LENGTH_SHORT).show();
-        if (id == 1){
+        if (id == 1) {
             toggleImageFetching();
         }
     }
@@ -543,9 +572,9 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         String toPrint = "";
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("SETTINGS"+id, id);
+        editor.putInt("SETTINGS" + id, id);
         editor.apply();
-        if(id == 0){
+        if (id == 0) {
             stringArray = getResources().getStringArray(R.array.Countries);
             toPrint = stringArray[settings[0]] + " Selected";
             dataBaseText.setText(getDescriptionFromGuideCode(elGuideCodeText.getText().toString()));
@@ -559,6 +588,18 @@ public class MainActivity extends AppCompatActivity implements SettingsFragment.
         if (fm.getBackStackEntryCount() > 0) {
             fm.popBackStack();
         }
+    }
+
+    private String purgeUserInput(String input) {
+        char[] array = input.toCharArray();
+        String toReturn = "";
+        for (char ch : array) {
+            for (char ban : bannedCharacters) {
+                ch = ch == ban ? '\0' : ch;
+            }
+            toReturn += ch;
+        }
+        return toReturn;
     }
 
 }
