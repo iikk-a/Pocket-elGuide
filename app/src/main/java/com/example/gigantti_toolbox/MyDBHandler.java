@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import java.util.ArrayList;
 
 public class MyDBHandler extends SQLiteOpenHelper {
 
@@ -38,19 +39,20 @@ public class MyDBHandler extends SQLiteOpenHelper {
 
     // Load all of the data from a the database
     String loadHandler() {
-        String result = "";
+        String result = "[";
         String query = "Select * FROM " + TABLE_NAME;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         while (cursor.moveToNext()) {
-            String result_0 = cursor.getString(0);
-            String result_1 = cursor.getString(1);
-            String result_2 = cursor.getString(2);
-            String result_3 = cursor.getString(3);
-            String result_4 = cursor.getString(4);
-            String result_5 = cursor.getInt(5) + "";
-            result += result_0 + " " + result_1 + " " + result_2 + " " + result_3 + " " + result_4 + " " + result_5 + System.getProperty("line.separator");
+            String result_0 = "\"" + COLUMN_ID + "\":\"" + cursor.getString(0) + "\",";
+            String result_1 = "\"" + COLUMN_NAME + "\":\"" + cursor.getString(1) + "\",";
+            String result_2 = "\"" + COLUMN_DESCRIPTION + "\":\"" + cursor.getString(2) + "\",";
+            String result_3 = "\"" + COLUMN_URL + "\":\"" + cursor.getString(3) + "\",";
+            String result_4 = "\"" + COLUMN_IMAGEURL + "\":\"" + cursor.getString(4) + "\",";
+            String result_5 = "\"" + COLUMN_COUNTRY + "\":\"" + cursor.getInt(5) + "\"";
+            result += ",{" + result_0 + "" + result_1 + "" + result_2 + "" + result_3 + "" + result_4 + "" + result_5 + "}";
         }
+        result += "]";
         cursor.close();
         return result;
     }
@@ -157,4 +159,8 @@ public class MyDBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.close();
     }
+
+    /*ArrayList<elGuideDB> allCodesExtraction() {
+        ArrayList<elGuideDB> elGuideArrayList = new ArrayList<>();
+    }*/
 }
