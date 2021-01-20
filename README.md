@@ -1,6 +1,4 @@
 # Pocket-elGuide
-Pocket elGuide 2.1.1 initial commit
-
 This application has been released on Google Play: https://play.google.com/store/apps/details?id=com.iikkag.gigantti_toolbox
 
 It is not useful for anyone other than Gigantti employees. 
